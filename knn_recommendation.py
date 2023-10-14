@@ -47,7 +47,7 @@ if __name__ == "__main__":
     user_ratings = preprocessing(user_ratings, 100)
     knn_recommends = get_nearestK(user_ratings, 51, True)
     knn_recommends.to_csv('knn_recommended.csv', index = False, header = True)
-    # movie_sort()
+    movie_sort()
     movies = pd.read_csv('movies_sorted.csv', sep = ',') # 62423部電影
     knn_recommends = convert_movieId_to_idx(movies, knn_recommends)
     knn_recommends.to_csv('knn_recommended_sorted.csv', index = False, header = True)

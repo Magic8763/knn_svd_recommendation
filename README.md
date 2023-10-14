@@ -1,5 +1,5 @@
 # KNN Movie Recommendation
-![](https://img.shields.io/github/stars/Magic8763/knn_recommendation.svg) ![](https://img.shields.io/github/watchers/Magic8763/knn_recommendation.svg) ![](https://img.shields.io/github/forks/Magic8763/knn_recommendation.svg)
+![](https://img.shields.io/github/stars/Magic8763/knn_recommendation) ![](https://img.shields.io/github/watchers/Magic8763/knn_recommendation) ![](https://img.shields.io/github/forks/Magic8763/knn_recommendation)
 
 基於用戶對電影評分的總體紀錄，以協同過濾方法找出最適合推薦給每部電影之觀看者的 50 部其他電影。
 
@@ -22,7 +22,7 @@
 ## Output
 - `knn_recommended.csv`: 對於通過自訂門檻篩選後剩餘的每部電影，與其具有最高相似度的前 50 部其他電影
 - \(Optional) `movies_sorted.csv`: `movies_extended.csv` 的排序版本，在此基於 year, movieId 兩特徵遞增排序為例
-- \(Optional) `knn_recommended_sorted.csv`: 以排序後的電影索引取代 `knn_recommended.csv` 內代表每部電影的 movieId 
+- \(Optional) `knn_recommended_sorted.csv`: 以排序後的電影索引取代 `knn_recommended.csv` 內代表電影的 movieId 
 
 ## Authors
 * **[Magic8763](https://github.com/Magic8763)**

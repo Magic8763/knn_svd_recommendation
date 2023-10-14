@@ -1,7 +1,7 @@
 # KNN Movie Recommendation
-![](https://img.shields.io/github/stars/Magic8763/knn_recommendation)
-![](https://img.shields.io/github/watchers/Magic8763/knn_recommendation)
-![](https://img.shields.io/github/forks/Magic8763/knn_recommendation)
+![](https://img.shields.io/github/stars/magic8763/knn_recommendation)
+![](https://img.shields.io/github/watchers/magic8763/knn_recommendation)
+![](https://img.shields.io/github/forks/magic8763/knn_recommendation)
 
 基於用戶對電影評分的總體紀錄，以協同過濾方法找出最適合推薦給每部電影之觀看者的 50 部其他電影。
 

@@ -13,14 +13,18 @@
 我們採用 Scikit-learn 提供的 NearestNeighbors 函數為 user-movie 矩陣計算 Cosine 相似度，最終根據該計算結果列出每部電影的前 50 近鄰。
 
 ## Dataset
-- [MovieLens 25M](https://grouplens.org/datasets/movielens/25m) 其中的 ratings.csv 用戶評分資料集
+- [MovieLens 25M](https://grouplens.org/datasets/movielens/25m) 其中的 `ratings.csv` 用戶評分資料集
   - 由 162541 位用戶對 59047 部電影做出的 2500萬0095 個評分，每個評分包含 userId, movieId, rating 等特徵
-- (Optional) [Threading Crawler](https://github.com/Magic8763/threading_crawler/tree/main) 的 movies_extended.csv 電影特徵資料集
+- (Optional) [Threading Crawler](https://github.com/Magic8763/threading_crawler/tree/main) 的 `movies_extended.csv` 電影特徵資料集
 
 ## Output
-- knn_recommended.csv: 對於通過自訂門檻篩選後剩餘的每部電影，與其具有最高相似度的前 50 部其他電影
-- \(Optional) movies_sorted.csv: movies_extended.csv 的排序版本，在此以 \[year, movieId] 兩特徵遞增排序為例
-- \(Optional) knn_recommended_sorted.csv: 以排序後的電影索引取代 knn_recommended.csv 內代表每部電影的 movieId 
+- `knn_recommended.csv`: 對於通過自訂門檻篩選後剩餘的每部電影，與其具有最高相似度的前 50 部其他電影
+- \(Optional) `movies_sorted.csv`: `movies_extended.csv` 的排序版本，在此基於 year, movieId 兩特徵遞增排序為例
+- \(Optional) `knn_recommended_sorted.csv`: 以排序後的電影索引取代 `knn_recommended.csv` 內代表每部電影的 movieId 
 
 ## Authors
-* **Chih-Chien Cheng** - (categoryv@cycu.org.tw)
+* **[Magic8763](https://github.com/Magic8763)**
+
+## LICENSE
+This project is licensed under the [MIT License](https://github.com/Magic8763/knn_recommendation/blob/main/LICENSE)
+

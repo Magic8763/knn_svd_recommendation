@@ -25,6 +25,6 @@
 ## Authors
 * **[Magic8763](https://github.com/Magic8763)**
 
-## LICENSE
+## License
 This project is licensed under the [MIT License](https://github.com/Magic8763/knn_recommendation/blob/main/LICENSE)
 

@@ -18,7 +18,7 @@
 
 ## Dataset
 - [MovieLens 25M](https://grouplens.org/datasets/movielens/25m) 其中的 `ratings.csv` 用戶評分資料集
-  - 由 162541 位用戶對 59047 部電影做出的 2500萬0095 個評分，每個評分包含 userId, movieId, rating 等特徵
+  - 由 162541 位用戶對 59047 部電影做出的 2500 萬 0095 個評分，每個評分包含 userId, movieId, rating 等特徵
 - (Optional) [Threading Crawler](https://github.com/Magic8763/threading_crawler/tree/main) 的 `movies_extended.csv` 電影特徵資料集
 
 ## Output

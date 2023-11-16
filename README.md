@@ -3,7 +3,7 @@
 ![](https://img.shields.io/github/watchers/magic8763/knn_recommendation)
 ![](https://img.shields.io/github/forks/magic8763/knn_recommendation)
 
-基於用戶對電影評分的總體紀錄，以協同過濾方法找出最適合推薦給每部電影之觀看者的 50 部其他電影。
+基於用戶對電影評分的總體紀錄，以基於 KNN 模型的協同過濾 (*Collaborative filtering*) 方法找出最適合推薦給每部電影之觀看者的 50 部其他電影。
 
 ## Prerequisites
 - Python3, NumPy, Pandas, Scikit-learn
@@ -14,7 +14,7 @@
 2. 根據被評分的電影分群所有用戶評分，紀錄至少被評了 100 次分數為 7 ~ 9 分的電影清單，其他評分對象不在該清單內的用戶評分將被去除
 3. 將剩餘的用戶評分轉換為 user-movie 矩陣
 
-我們採用 Scikit-learn 提供的 NearestNeighbors 函數為 user-movie 矩陣計算 Cosine 相似度，最終根據該計算結果列出每部電影的前 50 近鄰。
+最後使用 Scikit-learn 提供的 NearestNeighbors 函數為 user-movie 矩陣計算 Cosine 相似度，最終根據該計算結果列出每部電影的前 50 近鄰。
 
 ## Dataset
 - [MovieLens 25M](https://grouplens.org/datasets/movielens/25m) 其中的 `ratings.csv` 用戶評分資料集

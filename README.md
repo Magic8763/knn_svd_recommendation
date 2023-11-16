@@ -3,7 +3,7 @@
 ![](https://img.shields.io/github/watchers/magic8763/knn_recommendation)
 ![](https://img.shields.io/github/forks/magic8763/knn_recommendation)
 
-以基於 KNN 模型的協同過濾 (*Collaborative filtering*) 方法找出最適合推薦給每部電影之觀看者的 50 部其他電影。
+根據用戶對電影的總體評分紀錄，以基於 KNN 模型的協同過濾方法 (*Collaborative filtering*) 為每部電影找出最適合推薦的50部其他電影。
 
 ## Prerequisites
 - Python3, NumPy, Pandas, Scikit-learn

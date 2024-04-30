@@ -1,30 +1,38 @@
-# KNN Movie Recommendation
+# Movie Recommendation Model
 ![](https://img.shields.io/github/stars/magic8763/knn_recommendation)
 ![](https://img.shields.io/github/watchers/magic8763/knn_recommendation)
 ![](https://img.shields.io/github/forks/magic8763/knn_recommendation)
+![shields](https://img.shields.io/badge/python-3.10%2B-blue?style=flat-square)
 
-以用戶對電影評分的資料集作為訓練資料，使用基於 KNN 模型的協同過濾方法 (*Collaborative filtering*) 為每部電影找出最相似的 50 部推薦電影。
+以用戶對電影評分的資料集作為訓練資料，使用基於 KNN, SVD, SVD++ 模型的協同過濾方法 (*Collaborative filtering*)，生成用於推薦系統的預測模型。
 
 ## Prerequisites
-- Python3, NumPy, Pandas, Scikit-learn
+- Python3, Pandas, NumPy, Scikit-learn, Surprise, SciPy
 
 ## Description
-由於所用資料集的用戶評分數量龐大，考慮記憶體容量有限，預先採用以下自訂門檻對用戶評分進行篩選。
-1. 將評分分數轉換為 \[1, 10] 之間的整數，僅保留分數為 7 ~ 9 分的用戶評分
-2. 根據被評分的電影分群所有用戶評分，紀錄至少被評了 100 次分數為 7 ~ 9 分的電影清單，其他評分對象不在該清單內的用戶評分將被去除
-3. 將剩餘的用戶評分轉換為 user-movie 矩陣
-
-最後使用 Scikit-learn 提供的 NearestNeighbors 函數為 user-movie 矩陣計算 Cosine 相似度，最終根據該計算結果列出每部電影的前 50 近鄰。
+- `ratings_filter.py`: 資料前處理功能，使用自訂條件對資料量龐大的用戶評分資料集進行篩選
+- `sklearn_knn.py`: 採用 Scikit-learn NearestNeighbors 演算法，基於電影之間的 cosine 相似性，計算出每部電影的 Top K 近鄰 (相似電影)
+- `scipy_svd.py`: 採用 SciPy svds 演算法，透過對 user-movie 矩陣的奇異值分解預測每位用戶對任一電影的評分
+- `surprise_svd.py`: 採用 Surprise svd, svdpp 演算法，以最佳模型參數訓練 SVD, SVD++ 模型，用於預測指定用戶對任一電影的評分
 
 ## Dataset
-- [MovieLens 25M](https://grouplens.org/datasets/movielens/25m) 其中的 `ratings.csv` 用戶評分資料集
-  - 由 162541 位用戶對 59047 部電影做出的 2500 萬 0095 個評分，每個評分包含 userId, movieId, rating 等特徵
-- (Optional) [Threading Crawler](https://github.com/Magic8763/threading_crawler/tree/main) 的 `movies_extended.csv` 電影特徵資料集
+- [MovieLens 25M](https://grouplens.org/datasets/movielens/25m)
+  - `ratings.csv`: 用戶評分資料集，由 162541 位用戶對 59047 部電影做出的 2500 萬 0095 個評分，每個評分包含 userId, movieId, rating 等特徵
+- [Threading Crawler](https://github.com/Magic8763/threading_crawler/tree/main)
+  - `movies_extended.csv`: 電影特徵資料集，包含 62423 部電影的多項特徵，如 movieId, title, year, genres, grade 等
 
 ## Output
-- `knn_recommended.csv`: 對於通過自訂門檻篩選後剩餘的每部電影，與其具有最高相似度的前 50 部其他電影
-- \(Optional) `movies_sorted.csv`: `movies_extended.csv` 的排序版本，在此基於 year, movieId 兩特徵遞增排序為例
-- \(Optional) `knn_recommended_sorted.csv`: 以排序後的電影索引取代 `knn_recommended.csv` 內代表電影的 movieId 
+- `ratings@0x1000_1M_compactify.csv`: 前處理篩選後剩餘的用戶評分，此範例檔名代表「資料抽樣量 100 萬筆，其中的電影必須是得到了至少 1000 個評分者」的篩選結果，並且完成了電影 ID 的緊湊化 (compactify)
+- `movies_sorted.csv`: `movies_extended.csv` 的排序版本，預設依照 year, movieId 兩特徵遞增排序
+- `knn_recommended.csv`: 對於通過篩選後剩餘的每部電影，與其具有最高 cosine 相似度的前 K 部其他電影，預設 K = 50
+- `knn_recommended_sorted.csv`: 以排序後的電影索引取代 `knn_recommended.csv` 內的原始電影 ID
+- `svd_predict_df@0x1000_1M.csv`: 由 SciPy svds 演算法生成的 user-movie 矩陣，其值表示用戶對電影的預測評分
+- `svd_predict_top50@0x1000_1M.csv`: 根據 `svd_predict_df@0x1000_1M.pkl` 計算每位用戶的前 50 部推薦電影
+- `svd++_best@0x1000_1M.pkl`: 由 Surprise svdpp 演算法訓練的 SVD++ 模型
+
+## Reference
+- [深入淺出常用推薦系統演算法 Recommendation System](https://chriskang028.medium.com/%E6%B7%B1%E5%85%A5%E6%B7%BA%E5%87%BA%E5%B8%B8%E7%94%A8%E6%8E%A8%E8%96%A6%E7%B3%BB%E7%B5%B1%E6%BC%94%E7%AE%97%E6%B3%95-recommendation-system-42f2437e3e9a) - Chris Kang
+- [How to Build a Movie Recommendation System](https://towardsdatascience.com/how-to-build-a-movie-recommendation-system-67e321339109) - Ramya Vidiyala
 
 ## Authors
 * **[Magic8763](https://github.com/Magic8763)**

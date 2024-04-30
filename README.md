@@ -25,7 +25,8 @@
 - `ratings@0x1000_1M_compactify.csv`: 前處理篩選後剩餘的用戶評分，此範例檔名代表「資料抽樣量 100 萬筆，其中的電影必須是得到了至少 1000 個評分者」的篩選結果，並且完成了電影 ID 的緊湊化 (compactify)
 - `movies_sorted.csv`: `movies_extended.csv` 的排序版本，預設依照 year, movieId 兩特徵遞增排序
 - `knn_recommended.csv`: 對於通過篩選後剩餘的每部電影，與其具有最高 cosine 相似度的前 K 部其他電影，預設 K = 50
-- `knn_recommended_sorted.csv`: 以排序後的電影索引取代 `knn_recommended.csv` 內的原始電影 ID
+- `knn_recommended_sorted.csv`: 將 `knn_recommended.csv` 的緊湊化電影索引還原為 `movies_sorted.csv` 的電影索引
+- `knnRec.pkl`: `knn_recommended_sorted.csv` 的字典格式
 - `svd_predict_df@0x1000_1M.csv`: 由 SciPy svds 演算法生成的 user-movie 矩陣，其值表示用戶對電影的預測評分
 - `svd_predict_top50@0x1000_1M.csv`: 根據 `svd_predict_df@0x1000_1M.pkl` 計算每位用戶的前 50 部推薦電影
 - `svd++_best@0x1000_1M.pkl`: 由 Surprise svdpp 演算法訓練的 SVD++ 模型

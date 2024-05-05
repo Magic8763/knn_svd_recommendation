@@ -61,16 +61,17 @@ def get_SVDs(ratings):
     # 奇異值分解SVD
     user_ratings_centered.fillna(0, inplace=True) # nan補0
     U, sigma, Vt = svds(user_ratings_centered.to_numpy(), random_state=15)
-    U_sigma_Vt = np.dot(np.dot(U, np.diag(sigma)), Vt) # 相乘得到SVD矩陣
-    # U_sigma_Vt = U@np.diag(sigma)@Vt # 功能同上, @代表矩陣乘法, 即np.dot()
+    S = np.diag(sigma) # 轉換長度r的向量sigma為rxr的對角矩陣
+    U_sigma_Vt = np.dot(np.dot(U, S), Vt) # 相乘得到SVD矩陣
+    # U_sigma_Vt = U@S@Vt # 功能同上, @代表矩陣乘法, 即np.dot()
 
     # 將分數去中心化Decentralization
     U_sigma_Vt += avg_ratings.values.reshape(-1, 1)
     # 轉換成資料表
-    svd_res = pd.DataFrame(U_sigma_Vt, index=original_userId, columns=original_movieId)
+    sorted_index = sorted(original_userId) # 取得遞增排序的userId
+    svd_res = pd.DataFrame(U_sigma_Vt, index=sorted_index, columns=original_movieId)
 
     # 找出未評分的userId
-    sorted_index = sorted(svd_res.index) # 取得遞增排序的userId
     fill_index = list(range(1, sorted_index[0]))
     for i in range(1, len(sorted_index)):
         if sorted_index[i-1]+1 < sorted_index[i]:
@@ -115,7 +116,7 @@ def get_precision_recall(user_est_true, k=10, threshold=3.5):
     # 為每位用戶推薦的前k部電影(預測前k高分者)的precision和recall
     # 預測分數>=threshold時, 判定為推薦, 反之為不推薦
     # 真實分數>=threshold時, 判定為相關, 反之為不相關
-    # tp: 相關且推薦, tn: 不相關且不推薦, fp: 不相關但推薦, fn: 相關但不推薦
+    # tp: 相關且被推薦, tn: 不相關且不被推薦, fp: 不相關但被推薦, fn: 相關但不被推薦
     # accuracy = (tp+tn)/(tp+tn+fp+fn)
     # precision = tp/(tp+fp)
     # recall = tp/(tp+fn)
@@ -211,7 +212,7 @@ if __name__ == "__main__":
     # 儲存訓練結果
     # svd_df.to_csv('svd_predict_df@'+df_name+'.csv', index=True, header=True)
     # 載入訓練結果
-    svd_df = pd.read_csv('svd_predict_df@'+df_name+'.csv', index_col=0, sep=',')
+    svd_df = pd.read_csv('SVD_predict_df@'+df_name+'.csv', index_col=0, sep=',')
 
     # In[測試SVD模型]:
     # 以訓練集測試
@@ -219,11 +220,11 @@ if __name__ == "__main__":
     # 計算評估指標
     train_pred_est, train_res = get_error_metrics(train_preds, k=10)
     # train_res = {
-    #     'RMSE': 1.3045755717125465,
-    #     'MAE': 1.013894801570907,
-    #     'MAPE': 44.119917057366855,
-    #     'precision': 0.44373776745881505,
-    #     'recall': 0.5353996480961458
+    #     'RMSE': 0.8458116529731118,
+    #     'MAE': 0.6298914443673805,
+    #     'MAPE': 27.70510916248598,
+    #     'precision': 0.6063962080609273,
+    #     'recall': 0.6377281617654386
     # }
     
     # 以測試集測試
@@ -231,11 +232,11 @@ if __name__ == "__main__":
     # 計算評估指標
     test_pred_est, test_res = get_error_metrics(test_preds, k=10)
     # test_res = {
-    #     'RMSE': 1.2963822302348467,
-    #     'MAE': 1.0078131375392687,
-    #     'MAPE': 44.07428536532683,
-    #     'precision': 0.45275787744736135,
-    #     'recall': 0.5304773756490219
+    #     'RMSE': 1.0315808084480893,
+    #     'MAE': 0.787895870424359,
+    #     'MAPE': 34.27665495221534,
+    #     'precision': 0.4859368326036387,
+    #     'recall': 0.5434914129178345
     # }
 
     # In[TopK推薦結果]:
@@ -243,6 +244,55 @@ if __name__ == "__main__":
     # 計算每位用戶的前k部推薦電影
     top_k_df = get_top_k_df(svd_df, k=k)
     # 儲存推薦結果
-    top_k_df.to_csv('svd_predict_top'+str(k)+'@'+df_name+'.csv', index=True, header=True)
+    top_k_df.to_csv('SVD_predict_top'+str(k)+'@'+df_name+'.csv', index=True, header=True)
     # 載入推薦結果
-    # top_k_df = pd.read_csv('svd_predict_top'+str(k)+'@'+df_name+'.csv', index_col=0)
+    # top_k_df = pd.read_csv('SVD_predict_top'+str(k)+'@'+df_name+'.csv', index_col=0)
+
+    # In[]:
+    ratings = train_data
+    #    userId  movieId  rating  movieClass
+    # 0   71503     4228     4.0           1
+    # 1  112877    55995     2.5           2
+    # 2  147898     7151     4.0           3
+    # 3   42258     1010     3.0           4
+    # 4   16805      551     5.0           5
+    original_userId, original_movieId = ratings['userId'].unique(), ratings['movieId'].unique()
+    # 計算每位用戶對每部電影的評分
+    user_ratings_df = ratings.pivot_table(index='userId', columns='movieClass', values='rating')
+    # 計算每位用戶給分的平均值
+    avg_ratings = user_ratings_df.mean(axis=1)
+    # 將分數中心化Centralization
+    user_ratings_centered = user_ratings_df.sub(avg_ratings, axis=0)
+    del user_ratings_df, ratings
+
+    # 奇異值分解SVD
+    user_ratings_centered.fillna(0, inplace=True) # nan補0
+    U, sigma, Vt = svds(user_ratings_centered.to_numpy(), random_state=15)
+    S = np.diag(sigma) # 轉換長度r的向量sigma為rxr的對角矩陣
+    U_sigma_Vt = np.dot(np.dot(U, S), Vt) # 相乘得到SVD矩陣
+    # U_sigma_Vt = U@S@Vt # 功能同上, @代表矩陣乘法, 即np.dot()
+
+    # 將分數去中心化Decentralization
+    U_sigma_Vt += avg_ratings.values.reshape(-1, 1)
+    # 轉換成資料表
+    sorted_index = sorted(original_userId) # 取得遞增排序的userId
+    svd_res = pd.DataFrame(U_sigma_Vt, index=sorted_index, columns=original_movieId)
+
+    # 找出未評分的userId
+    fill_index = list(range(1, sorted_index[0]))
+    for i in range(1, len(sorted_index)):
+        if sorted_index[i-1]+1 < sorted_index[i]:
+            indices = list(range(sorted_index[i-1]+1, sorted_index[i]))
+            fill_index.extend(indices)
+    #print(len(fill_index), max(sorted_index)-len(sorted_index)) # 未評分者人數
+
+    # 未評分者以電影的平均得分作為預測結果
+    avg_pred_ratings = np.mean(U_sigma_Vt, axis=0) # 計算每部電影的平均得分
+    fill_df = pd.DataFrame(
+        [avg_pred_ratings for _ in range(len(fill_index))],
+        index=fill_index,
+        columns=original_movieId) # 以平均得分製表
+    svd_res = pd.concat([svd_res, fill_df], axis=0, join='outer', ignore_index=False) # 合併兩表
+    del fill_df
+    svd_res.sort_index(inplace=True) # 依userId遞增排序
+    print('get_SVDs() done.')

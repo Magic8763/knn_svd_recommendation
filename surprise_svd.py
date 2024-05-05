@@ -76,11 +76,11 @@ def get_svd_model(trainset, fname='', pp=False):
     # SVD奇異值分解演算法
     algo = SVDpp if pp else SVD
     svd = algo(n_factors=100, random_state=15, verbose=True)
-    # n_factors: 分解矩陣的大小(因子數), 預設為100
+    # n_factors: 對角矩陣的大小(奇異值個數), 預設為100
     # n_epochs: SGD重複訓練的迭代次數, 預設為20
     # biased: SVD使用基線(True)或無偏差(False)的演算法版本, 預設為True
-    # init_mean: 因子向量初始化的常態分佈的平均值, 預設為0
-    # init_std_dev: 因子向量初始化的常態分佈的標準差, 預設為0.1
+    # init_mean: 奇異值向量初始化的常態分佈的平均值, 預設為0
+    # init_std_dev: 奇異值向量初始化的常態分佈的標準差, 預設為0.1
     # lr_all: 所有參數的學習率, 預設為0.005
     # reg_all: 所有參數的正規化項, 預設為0.02
     # random_state: 隨機種子, 預設為None
@@ -95,7 +95,7 @@ def get_svd_model(trainset, fname='', pp=False):
         'max_userId': 162541, # ratings_25M內最大的userId = 162541
         'last_userId': max(trainset._raw2inner_id_users)
     }
-    fname = 'svd++@'+fname if pp else 'svd@'+fname
+    fname = 'SVD++@'+fname if pp else 'FunkSVD@'+fname
     with open(fname+'.pkl', 'wb') as file:
         pickle.dump(adict, file) # 寫出svd模型, 最大已訓練userId
     print('get_svd_model() done.')
@@ -105,7 +105,7 @@ def get_best_svd_model(trainset, train_data, fname='', pp=False):
     # 最佳SVD配置
     param_grid = {'n_epochs': [10, 20],
                   'lr_all': [0.002, 0.005],
-                  'n_factors': [50, 100, 150],
+                  'n_factors': [5, 10, 20, 50],
                   'random_state': [15]}
     algo = SVDpp if pp else SVD
     jobs = 1 if pp else 2
@@ -121,7 +121,7 @@ def get_best_svd_model(trainset, train_data, fname='', pp=False):
         'max_userId': 162541, # ratings_25M內最大的userId = 162541
         'last_userId': max(trainset._raw2inner_id_users)
     }
-    fname = 'svd++_best@'+fname if pp else 'svd_best@'+fname
+    fname = 'SVD++_best@'+fname if pp else 'FunkSVD_best@'+fname
     with open(fname+'.pkl', 'wb') as file:
         pickle.dump(adict, file) # 寫出最佳svd模型, 最大已訓練userId
     print('get_best_svd_model() done.')
@@ -130,7 +130,7 @@ def get_best_svd_model(trainset, train_data, fname='', pp=False):
 def load_svd_model(fname='', get_best=False, pp=False):
     # 載入預訓練的SVD模型 
     fname = '_best@'+fname if get_best else '@'+fname
-    fname = 'svd++'+fname if pp else 'svd'+fname
+    fname = 'SVD++'+fname if pp else 'FunkSVD'+fname
     with open(fname+'.pkl', 'rb') as file:
         adict = pickle.load(file) # 載入svd字典
     svd, max_userId, last_userId = adict['svd'], adict['max_userId'], adict['last_userId']
@@ -270,59 +270,59 @@ if __name__ == "__main__":
     trainset = df_to_trainset(train_data)
     testset = df_to_trainset(test_data)
     
-    # In[訓練SVD或SVD++模型]:
-    # svd = get_svd_model(trainset, df_name, pp=False) # SVD
+    # In[訓練FunkSVD或SVD++模型]:
+    # svd = get_svd_model(trainset, df_name, pp=False) # FunkSVD
     # svdpp = get_svd_model(trainset, df_name, pp=True) # SVD++
     # 載入預訓練的模型
     svd, max_userId, last_userId = load_svd_model(df_name, get_best=False, pp=False)
     # svdpp, max_userId, last_userId = load_svd_model(df_name, get_best=False, pp=True)
     
-    # In[訓練最佳參數的SVD或SVD++模型]:
+    # In[訓練最佳參數的FunkSVD或SVD++模型]:
     # svd = get_best_svd_model(trainset, train_data, df_name, pp=False)
-    # svdpp = get_best_svd_model(trainset, train_data, df_name, pp=True)
+    svdpp = get_best_svd_model(trainset, train_data, df_name, pp=True)
     # 載入預訓練的模型
     # svd, max_userId, last_userId = load_svd_model(df_name, get_best=True, pp=False)
-    svdpp, max_userId, last_userId = load_svd_model(df_name, get_best=True, pp=True)
+    # svdpp, max_userId, last_userId = load_svd_model(df_name, get_best=True, pp=True)
     
     # In[測試SVD模型]:
-    model = svd
-    # model = svdpp
+    # model = svd
+    model = svdpp
     # 以訓練集測試
     train_preds = get_preds(model, trainset)
     # 計算評估指標
     train_pred_est, train_res = get_error_metrics(train_preds, k=10)
-    # SVD_best train_res = {
-    #     'RMSE': 0.7274954206128231,
-    #     'MAE': 0.5607129798599508,
-    #     'MAPE': 24.654346676170256,
-    #     'precision': 0.7429401616044377,
-    #     'recall': 0.7165575250374736}
+    # FunkSVD_best train_res = {
+    #     'RMSE': 0.8100465982136185,
+    #     'MAE': 0.6225475448639389,
+    #     'MAPE': 27.58247645183176,
+    #     'precision': 0.705793592478212,
+    #     'recall': 0.6888082361661929
     # }
     # SVD++_best train_res = {
-    #     'RMSE': 0.6962367345988407,
-    #     'MAE': 0.5364719270972894,
-    #     'MAPE': 23.503126512723657,
-    #     'precision': 0.7559124810287762,
-    #     'recall': 0.7276201876315835}
+    #     'RMSE': 0.8155418451683677,
+    #     'MAE': 0.6264579550096148,
+    #     'MAPE': 27.773684882536397,
+    #     'precision': 0.7031567447759981,
+    #     'recall': 0.6871123290410055
     # }
 
     # 以測試集測試
     test_preds = get_preds(model, testset)
     # 計算評估指標
     test_pred_est, test_res = get_error_metrics(test_preds, k=10)
-    # SVD_best test_res = {
-    #     'RMSE': 0.9066104918980751,
-    #     'MAE': 0.6971252487154936,
-    #     'MAPE': 30.93577843014798,
-    #     'precision': 0.6050963536522577,
-    #     'recall': 0.5998366168950949}
+    # FunkSVD_best test_res = {
+    #     'RMSE': 0.8991708567521395,
+    #     'MAE': 0.6903831181920878,
+    #     'MAPE': 30.69797044457917,
+    #     'precision': 0.6080278502159272,
+    #     'recall': 0.6052481461266422
     # }
     # SVD++_best test_res = {
-    #     'RMSE': 0.9037339109347786,
-    #     'MAE': 0.6961453278572577,
-    #     'MAPE': 30.72067645286987,
-    #     'precision': 0.6032689103423453,
-    #     'recall': 0.5947095086548151
+    #     'RMSE': 0.8973724701635606,
+    #     'MAE': 0.6889306026457536,
+    #     'MAPE': 30.617076190796926,
+    #     'precision': 0.6084419810729096,
+    #     'recall': 0.6052334459249522
     # }
 
     # 儲存測試結果

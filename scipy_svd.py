@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import random
 from scipy.sparse.linalg import svds
+from scipy.linalg import svd
 import pickle
 
 # In[]:
@@ -47,26 +48,33 @@ def read_ratings(df_name):
     print('read_ratings() done.')
     return ratings
 
-def get_SVDs(ratings):
-    # 儲存原始userId, movieId
-    original_userId, original_movieId = ratings['userId'].unique(), ratings['movieId'].unique()
+def get_SVD(ratings, k=6, using_svds=True):
     # 計算每位用戶對每部電影的評分
     user_ratings_df = ratings.pivot_table(index='userId', columns='movieClass', values='rating')
     # 計算每位用戶給分的平均值
     avg_ratings = user_ratings_df.mean(axis=1)
-    # 將分數中心化Centralization
+    # 將分數中心化Centering
     user_ratings_centered = user_ratings_df.sub(avg_ratings, axis=0)
-    del user_ratings_df, ratings
+    del user_ratings_df
 
     # 奇異值分解SVD
     user_ratings_centered.fillna(0, inplace=True) # nan補0
-    U, sigma, Vt = svds(user_ratings_centered.to_numpy(), random_state=15)
+    if svds:
+        U, sigma, Vt = svds(user_ratings_centered.to_numpy(), k=k, random_state=15)
+    else:
+        U, sigma, Vt = svd(user_ratings_centered.to_numpy(), full_matrices=False, check_finite=False)
+    print('get_SVD() done.')
+    res = {'U': U, 'sigma': sigma, 'Vt': Vt, 'rowAvg': avg_ratings.values.reshape(-1, 1)}
+    return res
+
+def build_SVD_df(res, original_userId, original_movieId, k=0):
+    U, sigma, Vt, rowAvg = res['U'][:,k:], res['sigma'][k:], res['Vt'][k:,:], res['rowAvg']
     S = np.diag(sigma) # 轉換長度r的向量sigma為rxr的對角矩陣
     U_sigma_Vt = np.dot(np.dot(U, S), Vt) # 相乘得到SVD矩陣
     # U_sigma_Vt = U@S@Vt # 功能同上, @代表矩陣乘法, 即np.dot()
 
-    # 將分數去中心化Decentralization
-    U_sigma_Vt += avg_ratings.values.reshape(-1, 1)
+    # 將分數去中心化Decentering
+    U_sigma_Vt += rowAvg
     # 轉換成資料表
     sorted_index = sorted(original_userId) # 取得遞增排序的userId
     svd_res = pd.DataFrame(U_sigma_Vt, index=sorted_index, columns=original_movieId)
@@ -88,7 +96,7 @@ def get_SVDs(ratings):
     svd_res = pd.concat([svd_res, fill_df], axis=0, join='outer', ignore_index=False) # 合併兩表
     del fill_df
     svd_res.sort_index(inplace=True) # 依userId遞增排序
-    print('get_SVDs() done.')
+    print('build_SVD_df() done.')
     return svd_res
 
 def get_preds(svd_df, ratings):
@@ -208,11 +216,19 @@ if __name__ == "__main__":
     del user_ratings
 
     # In[訓練SVD模型]:
-    # svd_df = get_SVDs(train_data)
+    # 儲存原始userId, movieId
+    original_userId, original_movieId = train_data['userId'].unique(), train_data['movieId'].unique()
+    # SVD奇異值分解
+    k = 6
+    svd_res = get_SVD(train_data, k=k, using_svds=True)
+    # svd_res = get_SVD(train_data, using_svds=False)
+    # 製作SVD推薦結果
+    svd_df = build_SVD_df(svd_res, original_userId, original_movieId, k=k-1)
+    del original_userId, original_movieId
     # 儲存訓練結果
     # svd_df.to_csv('svd_predict_df@'+df_name+'.csv', index=True, header=True)
     # 載入訓練結果
-    svd_df = pd.read_csv('SVD_predict_df@'+df_name+'.csv', index_col=0, sep=',')
+    # svd_df = pd.read_csv('SVD_predict_df@'+df_name+'.csv', index_col=0, sep=',')
 
     # In[測試SVD模型]:
     # 以訓練集測試
@@ -247,52 +263,3 @@ if __name__ == "__main__":
     top_k_df.to_csv('SVD_predict_top'+str(k)+'@'+df_name+'.csv', index=True, header=True)
     # 載入推薦結果
     # top_k_df = pd.read_csv('SVD_predict_top'+str(k)+'@'+df_name+'.csv', index_col=0)
-
-    # In[]:
-    ratings = train_data
-    #    userId  movieId  rating  movieClass
-    # 0   71503     4228     4.0           1
-    # 1  112877    55995     2.5           2
-    # 2  147898     7151     4.0           3
-    # 3   42258     1010     3.0           4
-    # 4   16805      551     5.0           5
-    original_userId, original_movieId = ratings['userId'].unique(), ratings['movieId'].unique()
-    # 計算每位用戶對每部電影的評分
-    user_ratings_df = ratings.pivot_table(index='userId', columns='movieClass', values='rating')
-    # 計算每位用戶給分的平均值
-    avg_ratings = user_ratings_df.mean(axis=1)
-    # 將分數中心化Centralization
-    user_ratings_centered = user_ratings_df.sub(avg_ratings, axis=0)
-    del user_ratings_df, ratings
-
-    # 奇異值分解SVD
-    user_ratings_centered.fillna(0, inplace=True) # nan補0
-    U, sigma, Vt = svds(user_ratings_centered.to_numpy(), random_state=15)
-    S = np.diag(sigma) # 轉換長度r的向量sigma為rxr的對角矩陣
-    U_sigma_Vt = np.dot(np.dot(U, S), Vt) # 相乘得到SVD矩陣
-    # U_sigma_Vt = U@S@Vt # 功能同上, @代表矩陣乘法, 即np.dot()
-
-    # 將分數去中心化Decentralization
-    U_sigma_Vt += avg_ratings.values.reshape(-1, 1)
-    # 轉換成資料表
-    sorted_index = sorted(original_userId) # 取得遞增排序的userId
-    svd_res = pd.DataFrame(U_sigma_Vt, index=sorted_index, columns=original_movieId)
-
-    # 找出未評分的userId
-    fill_index = list(range(1, sorted_index[0]))
-    for i in range(1, len(sorted_index)):
-        if sorted_index[i-1]+1 < sorted_index[i]:
-            indices = list(range(sorted_index[i-1]+1, sorted_index[i]))
-            fill_index.extend(indices)
-    #print(len(fill_index), max(sorted_index)-len(sorted_index)) # 未評分者人數
-
-    # 未評分者以電影的平均得分作為預測結果
-    avg_pred_ratings = np.mean(U_sigma_Vt, axis=0) # 計算每部電影的平均得分
-    fill_df = pd.DataFrame(
-        [avg_pred_ratings for _ in range(len(fill_index))],
-        index=fill_index,
-        columns=original_movieId) # 以平均得分製表
-    svd_res = pd.concat([svd_res, fill_df], axis=0, join='outer', ignore_index=False) # 合併兩表
-    del fill_df
-    svd_res.sort_index(inplace=True) # 依userId遞增排序
-    print('get_SVDs() done.')

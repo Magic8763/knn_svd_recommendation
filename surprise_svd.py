@@ -8,13 +8,6 @@ from datetime import datetime
 from surprise import SVD, Reader, Dataset, SVDpp
 from surprise.model_selection import GridSearchCV
 
-# APP
-# 1.同步/非同步執行緒對svd模型的訪問
-
-# DB
-# 1.讀取LINE用戶評分, 與訓練資料合併後重新訓練svd模型
-# # LINE用戶的userId = 資料庫內ID順序+162541 (最小應為162542)
-
 # In[]:
 
 def get_numstr(n):

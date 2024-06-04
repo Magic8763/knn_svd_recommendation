@@ -1,4 +1,4 @@
-# Movie Recommendation Model
+# Collaborative Filtering Recommendation using KNN and SVD
 ![](https://img.shields.io/github/stars/magic8763/knn_recommendation)
 ![](https://img.shields.io/github/watchers/magic8763/knn_recommendation)
 ![](https://img.shields.io/github/forks/magic8763/knn_recommendation)
